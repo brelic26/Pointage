@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pointage">
+<meta name="theme-color" content="#0f1117">
+<title>Pointage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2436;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #eef0f7;
+    --muted: #6b7280;
+    --green: #22c98a;
+    --green-dim: rgba(34,201,138,0.12);
+    --red: #f05c5c;
+    --red-dim: rgba(240,92,92,0.12);
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.12);
+    --blue: #5b9cf6;
+    --blue-dim: rgba(91,156,246,0.12);
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  .app {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 0 0 2rem;
+    min-height: 100dvh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .topbar-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* CLOCK */
+  .clock-section {
+    padding: 1.5rem 1.25rem 0.5rem;
+    text-align: center;
+  }
+  .clock {
+    font-family: var(--mono);
+    font-size: 52px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .week-info {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* STATUS */
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1rem 1.25rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 40px;
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+  .status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.paused { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .status-text { font-size: 13px; color: var(--text); }
+
+  /* BUTTONS */
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 1rem 1.25rem 0;
+  }
+  .btn {
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 15px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: transform .12s, background .15s, border-color .15s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.95); }
+  .btn:disabled { opacity: 0.28; cursor: default; }
+  .btn-icon { font-size: 18px; line-height: 1; }
+  .btn-label { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  .btn.green { border-color: rgba(34,201,138,0.3); background: var(--green-dim); color: var(--green); }
+  .btn.green .btn-label { color: rgba(34,201,138,0.6); }
+  .btn.red { border-color: rgba(240,92,92,0.3); background: var(--red-dim); color: var(--red); }
+  .btn.red .btn-label { color: rgba(240,92,92,0.6); }
+  .btn.amber { border-color: rgba(245,166,35,0.3); background: var(--amber-dim); color: var(--amber); }
+  .btn.amber .btn-label { color: rgba(245,166,35,0.6); }
+  .btn.blue { border-color: rgba(91,156,246,0.3); background: var(--blue-dim); color: var(--blue); }
+  .btn.blue .btn-label { color: rgba(91,156,246,0.6); }
+
+  /* SECTION */
+  .section {
+    padding: 1.5rem 1.25rem 0;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ENTRIES */
+  .entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .entry-day {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 30px;
+  }
+  .entry-times {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    flex: 1;
+  }
+  .entry-dur {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .entry-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 2px 4px;
+    line-height: 1;
+    border-radius: 4px;
+  }
+  .entry-del:active { color: var(--red); }
+  .live-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    font-weight: 500;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .live-badge.active { background: var(--green-dim); color: var(--green); }
+  .live-badge.paused { background: var(--amber-dim); color: var(--amber); }
+  .empty-msg {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+
+  /* EXPORT */
+  .export-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    margin-top: 10px;
+  }
+  .export-btn:active { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 1.25rem 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <span class="topbar-title">Pointage</span>
+    <span class="topbar-date" id="top-date"></span>
+  </div>
+
+  <div class="clock-section">
+    <div class="clock" id="clock">00:00:00</div>
+    <div class="week-info" id="week-info">—</div>
+  </div>
+
+  <div class="status-pill">
+    <span class="status-dot" id="status-dot"></span>
+    <span class="status-text" id="status-text">Non pointé aujourd'hui</span>
+  </div>
+
+  <div class="btn-grid">
+    <button class="btn green" id="btn-arrive" onclick="pointArrivee()">
+      <span class="btn-icon">▶</span>
+      <span>Arrivée</span>
+      <span class="btn-label">Enregistre l'heure</span>
+    </button>
+    <button class="btn red" id="btn-depart" onclick="pointDepart()" disabled>
+      <span class="btn-icon">■</span>
+      <span>Départ</span>
+      <span class="btn-label">Fin de journée</span>
+    </button>
+    <button class="btn amber" id="btn-pause" onclick="pointPause()" disabled>
+      <span class="btn-icon">⏸</span>
+      <span>Début pause</span>
+      <span class="btn-label">Pause déjeuner…</span>
+    </button>
+    <button class="btn blue" id="btn-reprise" onclick="pointReprise()" disabled>
+      <span class="btn-icon">▷</span>
+      <span>Fin pause</span>
+      <span class="btn-label">Reprise du travail</span>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Cette semaine</span>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="total-week">0h00</div>
+        <div class="stat-lbl">Total semaine</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="total-today">0h00</div>
+        <div class="stat-lbl">Aujourd'hui</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Historique</span>
+    </div>
+    <div class="entries-list" id="entries-list"></div>
+    <button class="export-btn" onclick="exportCSV()">⬇ Exporter la semaine (.csv)</button>
+  </div>
+
+</div>
+
+<script>
+const DAYS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+
+let state = JSON.parse(localStorage.getItem('pointage_pwa') || 'null') || { entries: [], current: null };
+
+function save() { localStorage.setItem('pointage_pwa', JSON.stringify(state)); }
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+}
+function fmtTime(ts) { return new Date(ts).toTimeString().slice(0, 5); }
+function diffH(a, b) { return (b - a) / 3600000; }
+function hhmm(h) {
+  const total = Math.round(h * 60);
+  const hh = Math.floor(total / 60);
+  const mm = total % 60;
+  return hh + 'h' + (mm < 10 ? '0' : '') + mm;
+}
+
+function getWeekStart() {
+  const d = new Date();
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function sameDay(a, b) {
+  const x = new Date(a), y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
+
+function computeHours(entry) {
+  if (!entry.depart) return null;
+  let worked = diffH(entry.arrivee, entry.depart);
+  let paused = 0;
+  (entry.pauses || []).forEach(p => { if (p.fin) paused += diffH(p.debut, p.fin); });
+  return Math.max(0, worked - paused);
+}
+
+function render() {
+  const now = new Date();
+
+  // top bar
+  document.getElementById('top-date').textContent = fmtDate(now.getTime()) + ' ' + now.getFullYear();
+
+  // week label
+  const ws = getWeekStart();
+  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  document.getElementById('week-info').textContent =
+    'Sem. du ' + ws.getDate() + ' au ' + we.getDate() + ' ' + MONTHS[we.getMonth()];
+
+  const weekStart = getWeekStart().getTime();
+  const weekEntries = state.entries.filter(e => e.arrivee >= weekStart);
+  const c = state.current;
+  const isPaused = c && c.pauses && c.pauses.length > 0 && !c.pauses[c.pauses.length - 1].fin;
+
+  // buttons
+  document.getElementById('btn-arrive').disabled = !!c;
+  document.getElementById('btn-depart').disabled = !c || isPaused;
+  document.getElementById('btn-pause').disabled = !c || isPaused;
+  document.getElementById('btn-reprise').disabled = !isPaused;
+
+  // status
+  const dot = document.getElementById('status-dot');
+  const st = document.getElementById('status-text');
+  if (!c) {
+    dot.className = 'status-dot';
+    st.textContent = 'Non pointé aujourd\'hui';
+  } else if (isPaused) {
+    const lastP = c.pauses[c.pauses.length - 1];
+    dot.className = 'status-dot paused';
+    st.textContent = 'En pause depuis ' + fmtTime(lastP.debut) + ' (' + hhmm(diffH(lastP.debut, Date.now())) + ')';
+  } else {
+    dot.className = 'status-dot active';
+    let paused = 0;
+    (c.pauses || []).forEach(p => { if (p.fin) paused += diffH(p.debut, p.fin); });
+    const net = hhmm(Math.max(0, diffH(c.arrivee, Date.now()) - paused));
+    st.textContent = 'Arrivé à ' + fmtTime(c.arrivee) + ' — ' + net + ' travaillées';
+  }
+
+  // entries
+  const list = document.getElementById('entries-list');
+  list.innerHTML = '';
+  const allE = [...weekEntries];
+  if (c) allE.push(c);
+
+  if (allE.length === 0) {
+    list.innerHTML = '<div class="empty-msg">Aucun pointage cette semaine</div>';
+  } else {
+    allE.sort((a, b) => b.arrivee - a.arrivee).forEach(e => {
+      const isLive = !e.depart;
+      const h = computeHours(e);
+      const eIsPaused = isLive && e.pauses && e.pauses.length > 0 && !e.pauses[e.pauses.length - 1].fin;
+      const pauses = (e.pauses || []).filter(p => p.fin).length;
+
+      let timesStr = fmtTime(e.arrivee) + ' → ' + (e.depart ? fmtTime(e.depart) : '…');
+      if (pauses > 0) timesStr += ' · ' + pauses + ' pause' + (pauses > 1 ? 's' : '');
+
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `
+        <div class="entry-day">${DAYS[new Date(e.arrivee).getDay()]}${isLive ? `<span class="live-badge ${eIsPaused ? 'paused' : 'active'}">${eIsPaused ? '⏸' : '●'}</span>` : ''}</div>
+        <div class="entry-times">${timesStr}</div>
+        <div class="entry-dur">${h !== null ? hhmm(h) : '...'}</div>
+        ${!isLive ? `<button class="entry-del" onclick="delEntry(${weekEntries.indexOf(e)})" title="Supprimer">✕</button>` : ''}
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  // totals
+  let totalWeek = 0, totalToday = 0;
+  weekEntries.forEach(e => {
+    const h = computeHours(e);
+    if (h !== null) {
+      totalWeek += h;
+      if (sameDay(e.arrivee, now)) totalToday += h;
+    }
+  });
+  document.getElementById('total-week').textContent = hhmm(totalWeek);
+  document.getElementById('total-today').textContent = hhmm(totalToday);
+}
+
+function pointArrivee() {
+  if (state.current) return;
+  state.current = { arrivee: Date.now(), pauses: [] };
+  save(); render();
+}
+
+function pointDepart() {
+  if (!state.current) return;
+  const c = state.current;
+  const isPaused = c.pauses && c.pauses.length > 0 && !c.pauses[c.pauses.length - 1].fin;
+  if (isPaused) return;
+  c.depart = Date.now();
+  state.entries.push(c);
+  state.current = null;
+  save(); render();
+}
+
+function pointPause() {
+  if (!state.current) return;
+  state.current.pauses.push({ debut: Date.now() });
+  save(); render();
+}
+
+function pointReprise() {
+  if (!state.current) return;
+  const pauses = state.current.pauses;
+  if (pauses.length > 0 && !pauses[pauses.length - 1].fin) {
+    pauses[pauses.length - 1].fin = Date.now();
+  }
+  save(); render();
+}
+
+function delEntry(idx) {
+  const weekStart = getWeekStart().getTime();
+  const weekEntries = state.entries.filter(e => e.arrivee >= weekStart);
+  const entry = weekEntries[idx];
+  const globalIdx = state.entries.indexOf(entry);
+  if (globalIdx > -1) state.entries.splice(globalIdx, 1);
+  save(); render();
+}
+
+function exportCSV() {
+  const weekStart = getWeekStart().getTime();
+  const rows = ['Jour,Date,Arrivée,Départ,Pauses (min),Heures travaillées'];
+  state.entries.filter(e => e.arrivee >= weekStart).forEach(e => {
+    const d = new Date(e.arrivee);
+    const h = computeHours(e);
+    let paused = 0;
+    (e.pauses || []).forEach(p => { if (p.fin) paused += diffH(p.debut, p.fin); });
+    rows.push([
+      DAYS[d.getDay()],
+      d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear(),
+      fmtTime(e.arrivee),
+      e.depart ? fmtTime(e.depart) : '',
+      Math.round(paused * 60),
+      h !== null ? h.toFixed(2) : ''
+    ].join(','));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pointage_semaine.csv';
+  a.click();
+}
+
+// clock
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toTimeString().slice(0, 8);
+  render();
+}, 1000);
+render();
+</script>
+</body>
+</html>
